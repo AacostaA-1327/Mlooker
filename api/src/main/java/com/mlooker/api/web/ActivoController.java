@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlooker.api.entity.Activo;
 import com.mlooker.api.service.ActivoService;
 
 @RestController
-@RequestMapping("/api/activos")
+@RequestMapping("/api/v1/activos")
 public class ActivoController {
 
 	private final ActivoService activoService;
@@ -29,6 +30,13 @@ public class ActivoController {
 	@GetMapping
 	public List<Activo> findAll() {
 		return activoService.findAll();
+	}
+
+	@GetMapping("/buscar")
+	public List<Activo> buscar(
+			@RequestParam(required = false) String tipo,
+			@RequestParam(required = false) Double rendimientoMinimo) {
+		return activoService.buscar(tipo, rendimientoMinimo);
 	}
 
 	@GetMapping("/{id}")

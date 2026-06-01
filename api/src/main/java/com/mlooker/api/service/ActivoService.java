@@ -36,4 +36,17 @@ public class ActivoService {
 		}
 		return false;
 	}
+
+	public List<Activo> buscar(String tipo, Double rendimientoMinimo) {
+		if (tipo != null && rendimientoMinimo != null) {
+			return activoRepository.findByTipoAndRendimientoMensualGreaterThanEqual(tipo, rendimientoMinimo);
+		}
+		if (tipo != null) {
+			return activoRepository.findByTipo(tipo);
+		}
+		if (rendimientoMinimo != null) {
+			return activoRepository.findByRendimientoMensualGreaterThanEqual(rendimientoMinimo);
+		}
+		return activoRepository.findAll();
+	}
 }
