@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mlooker.api.controller.dto.InvertirRequest;
 import com.mlooker.api.controller.dto.InvertirResponse;
+import com.mlooker.api.controller.dto.TotalRegaliasResponse;
 import com.mlooker.api.entity.Inversor;
 import com.mlooker.api.service.InversorService;
 
@@ -39,6 +40,13 @@ public class InversorController {
 	public ResponseEntity<Inversor> findById(@PathVariable Long id) {
 		return inversorService.findById(id)
 				.map(ResponseEntity::ok)
+				.orElse(ResponseEntity.notFound().build());
+	}
+
+	@GetMapping("/{id}/regalias-total")
+	public ResponseEntity<TotalRegaliasResponse> totalRegalias(@PathVariable Long id) {
+		return inversorService.totalRegaliasByInversorId(id)
+				.map(total -> ResponseEntity.ok(new TotalRegaliasResponse(id, total)))
 				.orElse(ResponseEntity.notFound().build());
 	}
 
