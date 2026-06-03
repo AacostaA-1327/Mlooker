@@ -38,10 +38,10 @@ public class DemoDataLoader implements CommandLineRunner {
 		Creador laPantera = crearCreador("La Pantera", "pantera@mlooker.demo");
 		Creador lucho = crearCreador("Lucho RK", "lucho@mlooker.demo");
 
-		crearActivo("Buenas Noches", "Album", 14.5, 38.0, quevedo);
-		crearActivo("Cayo la Noche", "Single", 9.2, 57.0, laPantera);
-		crearActivo("Tour Maleante", "Album", 16.8, 24.0, lucho);
-		crearActivo("Columbia", "Single", 11.0, 43.0, quevedo);
+		crearActivo("Buenas Noches", "MUSICA", 1450.0, 100, 38.0, quevedo);
+		crearActivo("Cayo la Noche", "MUSICA", 920.0, 100, 57.0, laPantera);
+		crearActivo("Tour Maleante", "MUSICA", 1680.0, 100, 24.0, lucho);
+		crearActivo("Columbia", "MUSICA", 1100.0, 100, 43.0, quevedo);
 
 		Inversor demo = new Inversor();
 		demo.setNombre("Alex Rivera");
@@ -56,11 +56,19 @@ public class DemoDataLoader implements CommandLineRunner {
 		return creadorRepository.save(creador);
 	}
 
-	private void crearActivo(String titulo, String tipo, double rendimiento, double disponible, Creador creador) {
+	private void crearActivo(
+			String titulo,
+			String tipo,
+			double precioTotal,
+			int fracciones,
+			double disponible,
+			Creador creador) {
 		Activo activo = new Activo();
 		activo.setTitulo(titulo);
 		activo.setTipo(tipo);
-		activo.setRendimientoMensual(rendimiento);
+		activo.setPrecioTotal(precioTotal);
+		activo.setCantidadFracciones(fracciones);
+		activo.setRendimientoMensual(precioTotal / fracciones);
 		activo.setPorcentajeDisponible(disponible);
 		activo.setCreador(creador);
 		activoRepository.save(activo);

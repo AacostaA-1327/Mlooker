@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.mlooker.api.controller.dto.PublicarActivoRequest;
 import com.mlooker.api.entity.Activo;
 import com.mlooker.api.entity.Creador;
 import com.mlooker.api.repository.ActivoRepository;
@@ -33,6 +34,22 @@ public class ActivoService {
 
 	public Activo save(Activo activo) {
 		resolveCreador(activo);
+		return activoRepository.save(activo);
+	}
+
+	public Activo publicarObra(Long creadorId, PublicarActivoRequest request) {
+		Creador creador = creadorRepository.findById(creadorId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Creador no encontrado"));
+
+		Activo activo = new Activo();
+		activo.setTitulo(request.titulo().trim());
+		activo.setTipo(request.tipo());
+		activo.setPrecioTotal(request.precioTotal());
+		activo.setCantidadFracciones(request.cantidadFracciones());
+		activo.setRendimientoMensual(request.precioTotal() / request.cantidadFracciones());
+		activo.setPorcentajeDisponible(100.0);
+		activo.setCreador(creador);
+
 		return activoRepository.save(activo);
 	}
 

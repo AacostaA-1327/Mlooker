@@ -38,6 +38,12 @@ public class Activo {
 	private Double rendimientoMensual;
 
 	@Column(nullable = false)
+	private Double precioTotal;
+
+	@Column(nullable = false)
+	private Integer cantidadFracciones;
+
+	@Column(nullable = false)
 	private Double porcentajeDisponible = 100.0;
 
 	@ManyToOne(optional = false)

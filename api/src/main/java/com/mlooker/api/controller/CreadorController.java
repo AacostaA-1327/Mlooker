@@ -14,8 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mlooker.api.controller.dto.PublicarActivoRequest;
+import com.mlooker.api.entity.Activo;
 import com.mlooker.api.entity.Creador;
+import com.mlooker.api.service.ActivoService;
 import com.mlooker.api.service.CreadorService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/creadores")
@@ -23,9 +28,11 @@ import com.mlooker.api.service.CreadorService;
 public class CreadorController {
 
 	private final CreadorService creadorService;
+	private final ActivoService activoService;
 
-	public CreadorController(CreadorService creadorService) {
+	public CreadorController(CreadorService creadorService, ActivoService activoService) {
 		this.creadorService = creadorService;
+		this.activoService = activoService;
 	}
 
 	@GetMapping
@@ -38,6 +45,14 @@ public class CreadorController {
 		return creadorService.findById(id)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
+	}
+
+	@PostMapping("/{id}/activos")
+	public ResponseEntity<Activo> publicarActivo(
+			@PathVariable Long id,
+			@Valid @RequestBody PublicarActivoRequest request) {
+		Activo saved = activoService.publicarObra(id, request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
 
 	@PostMapping

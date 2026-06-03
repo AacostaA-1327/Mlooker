@@ -1,6 +1,7 @@
 import api from './client'
 
 const INVERSOR_ID = Number(import.meta.env.VITE_INVERSOR_ID ?? 1)
+const CREADOR_ID = Number(import.meta.env.VITE_CREADOR_ID ?? 1)
 
 const COVERS = [
   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=640&q=80',
@@ -15,7 +16,10 @@ export function mapActivoToCard(activo, index = 0) {
     title: activo.titulo,
     artist: activo.creador?.nombre ?? 'Artista desconocido',
     type: activo.tipo,
-    tokenPrice: activo.rendimientoMensual,
+    tokenPrice:
+      activo.precioTotal && activo.cantidadFracciones
+        ? activo.precioTotal / activo.cantidadFracciones
+        : activo.rendimientoMensual,
     availablePct: Math.round(activo.porcentajeDisponible ?? 100),
     cover: COVERS[index % COVERS.length],
   }
@@ -39,4 +43,9 @@ export async function invertirEnActivo(activoId, importe, inversorId = INVERSOR_
   return data
 }
 
-export { INVERSOR_ID }
+export async function publicarActivo(payload, creadorId = CREADOR_ID) {
+  const { data } = await api.post(`/api/v1/creadores/${creadorId}/activos`, payload)
+  return data
+}
+
+export { INVERSOR_ID, CREADOR_ID }
