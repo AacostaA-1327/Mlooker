@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlooker.api.entity.Creador;
@@ -18,6 +19,7 @@ import com.mlooker.api.service.CreadorService;
 
 @RestController
 @RequestMapping("/api/v1/creadores")
+@CrossOrigin(origins = { "http://localhost:5173", "http://127.0.0.1:5173" })
 public class CreadorController {
 
 	private final CreadorService creadorService;
