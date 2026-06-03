@@ -35,6 +35,11 @@ export async function fetchInversor(id = INVERSOR_ID) {
   return data
 }
 
+export async function fetchTotalRegalias(inversorId = INVERSOR_ID) {
+  const { data } = await api.get(`/api/v1/inversores/${inversorId}/regalias-total`)
+  return data.totalRegalias
+}
+
 export async function invertirEnActivo(activoId, importe, inversorId = INVERSOR_ID) {
   const { data } = await api.post(`/api/v1/inversores/${inversorId}/invertir`, {
     activoId,

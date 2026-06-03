@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Wallet, Music4, TrendingUp, BadgeEuro, Loader2, LayoutDashboard, PenLine } from 'lucide-react'
 import { royaltyHistory } from './mocks/data'
-import { fetchActivos, fetchInversor, invertirEnActivo } from './api/mlookerApi'
+import { fetchActivos, fetchInversor, fetchTotalRegalias, invertirEnActivo } from './api/mlookerApi'
 import CreatorPublishForm from './components/creator/CreatorPublishForm'
 
 function formatEur(value) {
@@ -21,15 +21,21 @@ export default function App() {
   const [view, setView] = useState(VIEWS.MARKETPLACE)
   const [assets, setAssets] = useState([])
   const [walletEur, setWalletEur] = useState(0)
+  const [totalRegalias, setTotalRegalias] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [investingId, setInvestingId] = useState(null)
 
   const loadMarketplace = useCallback(async () => {
     setError(null)
-    const [activos, inversor] = await Promise.all([fetchActivos(), fetchInversor()])
+    const [activos, inversor, regalias] = await Promise.all([
+      fetchActivos(),
+      fetchInversor(),
+      fetchTotalRegalias(),
+    ])
     setAssets(activos)
     setWalletEur(inversor.saldo)
+    setTotalRegalias(regalias)
   }, [])
 
   useEffect(() => {
@@ -56,6 +62,7 @@ export default function App() {
     try {
       const result = await invertirEnActivo(asset.id, asset.tokenPrice)
       setWalletEur(result.nuevoSaldo)
+      setTotalRegalias(await fetchTotalRegalias())
       setAssets((prev) =>
         prev.map((item) =>
           item.id === asset.id
@@ -191,7 +198,11 @@ export default function App() {
                 <h2>
                   <TrendingUp size={18} /> Historial de regalias
                 </h2>
-                <p>Ultimos 7 dias (demo)</p>
+                <p>
+                  {totalRegalias != null
+                    ? `Total mensual en cartera: ${formatEur(totalRegalias)}`
+                    : 'Ultimos 7 dias (demo)'}
+                </p>
               </div>
 
               <div className="chart-wrap">
