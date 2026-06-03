@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+node_modules/
+dist/
+.vite/
+.DS_Store
+*.local
+node_modules/
+dist/
+.vite/
+.DS_Store
+*.local
