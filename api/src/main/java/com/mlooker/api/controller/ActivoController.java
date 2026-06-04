@@ -56,9 +56,7 @@ public class ActivoController {
 	public ResponseEntity<Activo> update(@PathVariable Long id, @RequestBody Activo activo) {
 		return activoService.findById(id)
 				.map(existing -> {
-					existing.setTitulo(activo.getTitulo());
-					existing.setTipo(activo.getTipo());
-					existing.setRendimientoMensual(activo.getRendimientoMensual());
+					activoService.applyUpdate(existing, activo);
 					return ResponseEntity.ok(activoService.save(existing));
 				})
 				.orElse(ResponseEntity.notFound().build());

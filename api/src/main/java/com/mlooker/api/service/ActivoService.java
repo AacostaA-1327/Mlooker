@@ -3,18 +3,24 @@ package com.mlooker.api.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.mlooker.api.entity.Activo;
+import com.mlooker.api.entity.Creador;
 import com.mlooker.api.repository.ActivoRepository;
+import com.mlooker.api.repository.CreadorRepository;
 
 @Service
 public class ActivoService {
 
 	private final ActivoRepository activoRepository;
+	private final CreadorRepository creadorRepository;
 
-	public ActivoService(ActivoRepository activoRepository) {
+	public ActivoService(ActivoRepository activoRepository, CreadorRepository creadorRepository) {
 		this.activoRepository = activoRepository;
+		this.creadorRepository = creadorRepository;
 	}
 
 	public List<Activo> findAll() {
@@ -26,6 +32,7 @@ public class ActivoService {
 	}
 
 	public Activo save(Activo activo) {
+		resolveCreador(activo);
 		return activoRepository.save(activo);
 	}
 
@@ -48,5 +55,24 @@ public class ActivoService {
 			return activoRepository.findByRendimientoMensualGreaterThanEqual(rendimientoMinimo);
 		}
 		return activoRepository.findAll();
+	}
+
+	public void applyUpdate(Activo existing, Activo updated) {
+		existing.setTitulo(updated.getTitulo());
+		existing.setTipo(updated.getTipo());
+		existing.setRendimientoMensual(updated.getRendimientoMensual());
+		if (updated.getCreador() != null) {
+			resolveCreador(updated);
+			existing.setCreador(updated.getCreador());
+		}
+	}
+
+	private void resolveCreador(Activo activo) {
+		if (activo.getCreador() == null || activo.getCreador().getId() == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El activo debe incluir un creador válido");
+		}
+		Creador creador = creadorRepository.findById(activo.getCreador().getId())
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Creador no encontrado"));
+		activo.setCreador(creador);
 	}
 }
