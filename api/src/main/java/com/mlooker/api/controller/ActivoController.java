@@ -1,4 +1,4 @@
-package com.mlooker.api.web;
+package com.mlooker.api.controller;
 
 import java.util.List;
 
@@ -28,15 +28,15 @@ public class ActivoController {
 	}
 
 	@GetMapping
-	public List<Activo> findAll() {
-		return activoService.findAll();
+	public ResponseEntity<List<Activo>> findAll() {
+		return ResponseEntity.ok(activoService.findAll());
 	}
 
 	@GetMapping("/buscar")
-	public List<Activo> buscar(
+	public ResponseEntity<List<Activo>> buscar(
 			@RequestParam(required = false) String tipo,
 			@RequestParam(required = false) Double rendimientoMinimo) {
-		return activoService.buscar(tipo, rendimientoMinimo);
+		return ResponseEntity.ok(activoService.buscar(tipo, rendimientoMinimo));
 	}
 
 	@GetMapping("/{id}")
@@ -67,7 +67,7 @@ public class ActivoController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		if (activoService.deleteById(id)) {
-			return ResponseEntity.noContent().build();
+			return ResponseEntity.ok().build();
 		}
 		return ResponseEntity.notFound().build();
 	}

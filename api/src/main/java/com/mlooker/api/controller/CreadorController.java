@@ -1,4 +1,4 @@
-package com.mlooker.api.web;
+package com.mlooker.api.controller;
 
 import java.util.List;
 
@@ -13,52 +13,52 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mlooker.api.entity.Inversor;
-import com.mlooker.api.service.InversorService;
+import com.mlooker.api.entity.Creador;
+import com.mlooker.api.service.CreadorService;
 
 @RestController
-@RequestMapping("/api/inversores")
-public class InversorController {
+@RequestMapping("/api/v1/creadores")
+public class CreadorController {
 
-	private final InversorService inversorService;
+	private final CreadorService creadorService;
 
-	public InversorController(InversorService inversorService) {
-		this.inversorService = inversorService;
+	public CreadorController(CreadorService creadorService) {
+		this.creadorService = creadorService;
 	}
 
 	@GetMapping
-	public List<Inversor> findAll() {
-		return inversorService.findAll();
+	public ResponseEntity<List<Creador>> findAll() {
+		return ResponseEntity.ok(creadorService.findAll());
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Inversor> findById(@PathVariable Long id) {
-		return inversorService.findById(id)
+	public ResponseEntity<Creador> findById(@PathVariable Long id) {
+		return creadorService.findById(id)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
 
 	@PostMapping
-	public ResponseEntity<Inversor> create(@RequestBody Inversor inversor) {
-		Inversor saved = inversorService.save(inversor);
+	public ResponseEntity<Creador> create(@RequestBody Creador creador) {
+		Creador saved = creadorService.save(creador);
 		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Inversor> update(@PathVariable Long id, @RequestBody Inversor inversor) {
-		return inversorService.findById(id)
+	public ResponseEntity<Creador> update(@PathVariable Long id, @RequestBody Creador creador) {
+		return creadorService.findById(id)
 				.map(existing -> {
-					existing.setNombre(inversor.getNombre());
-					existing.setSaldo(inversor.getSaldo());
-					return ResponseEntity.ok(inversorService.save(existing));
+					existing.setNombre(creador.getNombre());
+					existing.setEmail(creador.getEmail());
+					return ResponseEntity.ok(creadorService.save(existing));
 				})
 				.orElse(ResponseEntity.notFound().build());
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
-		if (inversorService.deleteById(id)) {
-			return ResponseEntity.noContent().build();
+		if (creadorService.deleteById(id)) {
+			return ResponseEntity.ok().build();
 		}
 		return ResponseEntity.notFound().build();
 	}
