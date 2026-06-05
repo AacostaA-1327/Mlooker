@@ -1,4 +1,11 @@
-# Copia a application-local.properties y pon tu contraseña MySQL (ese fichero no va a Git).
+# =============================================================================
+# Configuración LOCAL de Mlooker (plantilla para el equipo)
+# =============================================================================
+# 1. Copia este fichero en la MISMA carpeta con el nombre:
+#    application-local.properties
+# 2. Sustituye PON_TU_PASSWORD_MYSQL por la contraseña que te pase el responsable.
+# 3. Ese fichero NO se sube a Git (.gitignore).
+# =============================================================================
 
 spring.jpa.hibernate.ddl-auto=update
 
@@ -9,3 +16,4 @@ spring.datasource.password=PON_TU_PASSWORD_MYSQL
 spring.security.user.name=admin
 spring.security.user.password=admin
 mlooker.security.api-key=dev-api-key
+mlooker.jwt.secret=dev-jwt-secret-mlooker-local-32chars!!

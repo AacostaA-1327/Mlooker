@@ -34,3 +34,4 @@ build/
 
 # Secretos y configuraciones específicas de entorno local
 src/main/resources/application-local.properties
+run-local.ps1

@@ -3,7 +3,7 @@ package com.mlooker.api.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +36,10 @@ public class Creador {
 	@Column(nullable = false, unique = true)
 	private String email;
 
+	@Column(nullable = false)
+	private boolean verificado = false;
+
 	@OneToMany(mappedBy = "creador")
-	@JsonManagedReference
+	@JsonIgnore
 	private List<Activo> activos = new ArrayList<>();
 }

@@ -15,7 +15,11 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlooker.api.controller.dto.CrearCreadorRequest;
+import com.mlooker.api.controller.dto.PublicarActivoRequest;
+import com.mlooker.api.entity.Activo;
 import com.mlooker.api.entity.Creador;
+import com.mlooker.api.service.ActivoService;
+import com.mlooker.api.service.AuthService;
 import com.mlooker.api.service.CreadorService;
 
 import jakarta.validation.Valid;
@@ -26,9 +30,16 @@ import jakarta.validation.Valid;
 public class CreadorController {
 
 	private final CreadorService creadorService;
+	private final ActivoService activoService;
+	private final AuthService authService;
 
-	public CreadorController(CreadorService creadorService) {
+	public CreadorController(
+			CreadorService creadorService,
+			ActivoService activoService,
+			AuthService authService) {
 		this.creadorService = creadorService;
+		this.activoService = activoService;
+		this.authService = authService;
 	}
 
 	@GetMapping
@@ -41,6 +52,30 @@ public class CreadorController {
 		return creadorService.findById(id)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
+	}
+
+	@GetMapping("/{id}/activos")
+	public ResponseEntity<List<Activo>> misActivos(@PathVariable Long id) {
+		authService.requireCreadorVerificado(id);
+		return ResponseEntity.ok(activoService.findByCreadorId(id));
+	}
+
+	@PostMapping("/{id}/activos")
+	public ResponseEntity<Activo> publicarActivo(
+			@PathVariable Long id,
+			@Valid @RequestBody PublicarActivoRequest request) {
+		authService.requireCreadorVerificado(id);
+		Activo saved = activoService.publicarObra(id, request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+	}
+
+	@DeleteMapping("/{id}/activos/{activoId}")
+	public ResponseEntity<Void> eliminarActivo(
+			@PathVariable Long id,
+			@PathVariable Long activoId) {
+		authService.requireCreadorVerificado(id);
+		activoService.eliminarObra(id, activoId);
+		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping

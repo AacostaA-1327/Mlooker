@@ -46,4 +46,12 @@ public class ApiExceptionHandler {
 		}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidationErrorResponse(errors));
 	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
+		String message = ex.getMessage() != null && !ex.getMessage().isBlank()
+				? ex.getMessage()
+				: "Error interno del servidor";
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", message));
+	}
 }

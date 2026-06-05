@@ -3,8 +3,8 @@ package com.mlooker.api.entity;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,11 +38,17 @@ public class Activo {
 	private Double rendimientoMensual;
 
 	@Column(nullable = false)
+	private Double precioTotal;
+
+	@Column(nullable = false)
+	private Integer cantidadFracciones;
+
+	@Column(nullable = false)
 	private Double porcentajeDisponible = 100.0;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "creador_id", nullable = false)
-	@JsonBackReference
+	@JsonIgnoreProperties("activos")
 	private Creador creador;
 
 	@ManyToMany(mappedBy = "activos")

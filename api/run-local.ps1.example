@@ -1,0 +1,13 @@
+# Copia a run-local.ps1 (misma carpeta), pon la contraseña MySQL y ejecuta: .\run-local.ps1
+# run-local.ps1 no se sube a Git.
+
+$env:DB_URL = "jdbc:mysql://localhost:3306/mlooker?createDatabaseIfNotExist=true&serverTimezone=UTC"
+$env:DB_USERNAME = "root"
+$env:DB_PASSWORD = "PON_TU_PASSWORD_MYSQL"
+
+$env:MLOOKER_BASIC_USER = "admin"
+$env:MLOOKER_BASIC_PASSWORD = "admin"
+$env:MLOOKER_API_KEY = "dev-api-key"
+
+Set-Location $PSScriptRoot
+.\mvnw.cmd spring-boot:run

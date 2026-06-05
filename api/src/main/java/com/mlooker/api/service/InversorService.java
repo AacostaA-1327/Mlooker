@@ -17,8 +17,6 @@ import com.mlooker.api.repository.InversorRepository;
 @Service
 public class InversorService {
 
-	private static final double PORCENTAJE_POR_INVERSION = 10.0;
-
 	private final InversorRepository inversorRepository;
 	private final ActivoRepository activoRepository;
 
@@ -67,19 +65,20 @@ public class InversorService {
 		Activo activo = activoRepository.findById(activoId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activo no encontrado"));
 
+		int tokens = tokensFromImporte(activo, importe);
+		double pctNecesario = tokens * porcentajePorToken(activo);
+
 		if (inversor.getSaldo() < importe) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente");
 		}
 
-		if (activo.getPorcentajeDisponible() <= 0) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No queda disponibilidad en este activo");
+		if (activo.getPorcentajeDisponible() + 0.001 < pctNecesario) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay suficientes tokens disponibles");
 		}
 
 		inversor.setSaldo(inversor.getSaldo() - importe);
-		inversor.getActivos().add(activo);
-
-		double nuevaDisponibilidad = Math.max(0, activo.getPorcentajeDisponible() - PORCENTAJE_POR_INVERSION);
-		activo.setPorcentajeDisponible(nuevaDisponibilidad);
+		inversorRepository.linkActivo(inversorId, activoId);
+		activo.setPorcentajeDisponible(activo.getPorcentajeDisponible() - pctNecesario);
 
 		inversorRepository.save(inversor);
 		activoRepository.save(activo);
@@ -89,5 +88,49 @@ public class InversorService {
 				activo.getId(),
 				inversor.getSaldo(),
 				activo.getPorcentajeDisponible());
+	}
+
+	@Transactional
+	public InvertirResponse vender(Long inversorId, Long activoId, Double importe) {
+		if (importe == null || importe <= 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El importe debe ser mayor que cero");
+		}
+
+		if (inversorRepository.countLink(inversorId, activoId) == 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No tienes tokens de este activo");
+		}
+
+		Inversor inversor = inversorRepository.findById(inversorId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inversor no encontrado"));
+
+		Activo activo = activoRepository.findById(activoId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activo no encontrado"));
+
+		int tokens = tokensFromImporte(activo, importe);
+		double pctLiberado = tokens * porcentajePorToken(activo);
+
+		inversor.setSaldo(inversor.getSaldo() + importe);
+		activo.setPorcentajeDisponible(Math.min(100.0, activo.getPorcentajeDisponible() + pctLiberado));
+
+		inversorRepository.save(inversor);
+		activoRepository.save(activo);
+
+		return new InvertirResponse(
+				inversor.getId(),
+				activo.getId(),
+				inversor.getSaldo(),
+				activo.getPorcentajeDisponible());
+	}
+
+	private int tokensFromImporte(Activo activo, Double importe) {
+		double tokenPrice = activo.getPrecioTotal() / activo.getCantidadFracciones();
+		return Math.max(1, (int) Math.round(importe / tokenPrice));
+	}
+
+	private double porcentajePorToken(Activo activo) {
+		if (activo.getCantidadFracciones() == null || activo.getCantidadFracciones() <= 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El activo no tiene fracciones válidas");
+		}
+		return 100.0 / activo.getCantidadFracciones();
 	}
 }
