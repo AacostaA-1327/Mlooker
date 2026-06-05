@@ -13,4 +13,6 @@ public interface ActivoRepository extends JpaRepository<Activo, Long> {
 	List<Activo> findByTipo(String tipo);
 
 	List<Activo> findByRendimientoMensualGreaterThanEqual(Double rendimientoMinimo);
+
+	List<Activo> findByCreadorIdOrderByIdDesc(Long creadorId);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlooker.api.entity.Activo;
@@ -19,6 +20,7 @@ import com.mlooker.api.service.ActivoService;
 
 @RestController
 @RequestMapping("/api/v1/activos")
+@CrossOrigin(origins = { "http://localhost:5173", "http://127.0.0.1:5173" })
 public class ActivoController {
 
 	private final ActivoService activoService;
