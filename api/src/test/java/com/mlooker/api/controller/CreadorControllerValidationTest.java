@@ -1,5 +1,6 @@
 package com.mlooker.api.controller;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,6 +26,7 @@ class CreadorControllerValidationTest {
 	@Test
 	void createSinNombre_devuelve400ConErroresPorCampo() throws Exception {
 		mockMvc.perform(post("/api/v1/creadores")
+						.with(httpBasic("testuser", "testpass"))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{"email":"artista@mlooker.demo"}
@@ -37,6 +39,7 @@ class CreadorControllerValidationTest {
 	@Test
 	void createConDatosValidos_devuelve201() throws Exception {
 		mockMvc.perform(post("/api/v1/creadores")
+						.with(httpBasic("testuser", "testpass"))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{"nombre":"Quevedo","email":"quevedo@mlooker.demo"}
