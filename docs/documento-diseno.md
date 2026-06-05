@@ -205,18 +205,87 @@ Base: `http://localhost:8080/api/v1`
 
 ---
 
-## 7. Decisiones técnicas
+## 7. Stack tecnológico y decisiones justificadas
 
+### 7.1 Visión general
 
-| Tema                    | Decisión                                  | Por qué                                              |
-| ----------------------- | ----------------------------------------- | ---------------------------------------------------- |
-| `@JsonIgnore`           | En listas como `Creador.activos`          | Evita JSON infinito al serializar                    |
-| `Optional`              | En `findById()`                           | No usar `.get()` a ciegas; devolver 404 si no existe |
-| JPQL                    | `SUM` de regalías en `InversorRepository` | Consulta sobre entidades Java, no tablas SQL         |
-| SQL nativo              | `INSERT` en `inversor_activo`             | Operación directa en tabla intermedia                |
-| `@Valid` + DTOs         | En crear creador y publicar obra          | Errores claros por campo                             |
-| `@RestControllerAdvice` | `ApiExceptionHandler`                     | Errores JSON uniformes                               |
-| MySQL                   | En lugar de H2                            | Persistencia real y trabajo en equipo                |
+Mlooker sigue una arquitectura **cliente–servidor** en monorepo: API REST en Java y cliente web en JavaScript. La separación permite desarrollar, desplegar y probar cada capa de forma independiente manteniendo un único repositorio para el equipo.
+
+```
+React (Vite)  →  HTTP/JSON  →  Spring Boot  →  JPA/Hibernate  →  MySQL 8
+```
+
+### 7.2 Backend — API REST
+
+| Tecnología | Versión | Motivo de elección |
+| ---------- | ------- | ------------------ |
+| **Java** | 17 | LTS estable; tipado fuerte y ecosistema maduro para APIs empresariales |
+| **Spring Boot** | 4.0 | Arranque rápido, autoconfiguración y estándar en el mercado para servicios REST |
+| **Spring Web MVC** | (starter) | Expone controladores REST con anotaciones (`@RestController`, `@GetMapping`…) y serialización JSON integrada |
+| **Spring Data JPA** | (starter) | Abstrae el acceso a datos con `JpaRepository`; Hibernate genera el esquema y mapea entidades a tablas |
+| **Hibernate** | (incluido en JPA) | ORM que materializa relaciones 1:N y N:M (`@ManyToOne`, `@ManyToMany`, `@JoinTable`) sin escribir SQL repetitivo |
+| **Spring Security** | (starter) | Centraliza autenticación y autorización; permite combinar JWT, Basic Auth y API Key en un único `SecurityFilterChain` |
+| **JJWT** | 0.12.6 | Generación y validación de tokens JWT para el frontend React sin mantener sesión en servidor |
+| **Spring Validation** | (starter) | Valida DTOs de entrada con `@Valid`, `@NotBlank`, `@NotNull` antes de llegar a la lógica de negocio |
+| **SpringDoc OpenAPI** | 3.0.2 | Documentación interactiva Swagger en `/swagger-ui.html` para probar endpoints sin escribir colecciones a mano |
+| **Lombok** | — | Reduce boilerplate en entidades (`@Data`, `@NoArgsConstructor`) y mantiene el código más legible |
+| **Maven** | (wrapper) | Gestión de dependencias y build reproducible; `mvnw` evita depender de una instalación global |
+
+### 7.3 Base de datos
+
+| Tecnología | Motivo de elección |
+| ---------- | ------------------ |
+| **MySQL 8** | Motor relacional real, compartible entre desarrolladores; permite demostrar PK, FK y tablas intermedias en Workbench (no solo en memoria) |
+| **Perfil `local` + variables de entorno** | Credenciales fuera del código (`application-local.properties`, `DB_PASSWORD`); el esquema se valida con `ddl-auto=validate` y datos demo se cargan al arrancar |
+| **H2** (solo tests) | Base en memoria para pruebas automatizadas sin depender de MySQL en CI |
+
+Se descartó usar H2 como base principal porque no refleja un entorno de producción ni facilita revisar el modelo relacional con herramientas como MySQL Workbench.
+
+### 7.4 Frontend — Cliente web
+
+| Tecnología | Versión | Motivo de elección |
+| ---------- | ------- | ------------------ |
+| **React** | 19 | Componentes reutilizables para marketplace, wallet y panel creador; amplia documentación y adopción en la industria |
+| **Vite** | 6 | Dev server instantáneo (HMR) y build ligero frente a herramientas más pesadas; ideal para un SPA que consume una API |
+| **JavaScript (JSX)** | — | Mismo lenguaje en todo el frontend; sin capa extra de TypeScript para un proyecto acotado a consumo de API |
+| **Axios** | 1.9 | Cliente HTTP con interceptores: adjunta el JWT automáticamente en cada petición autenticada |
+| **Tailwind CSS** | 3.4 | Estilos utilitarios sin mantener hojas CSS grandes; interfaz coherente con poco código |
+| **Lucide React** | — | Iconografía ligera y consistente en la UI |
+| **Recharts** | 2.15 | Gráficos en la wallet para visualizar rendimiento de la cartera del inversor |
+
+El frontend no duplica lógica de negocio: solo presenta datos y delega validaciones, transacciones y seguridad en la API.
+
+### 7.5 Arquitectura y patrones en la API
+
+| Patrón / práctica | Aplicación | Justificación |
+| ----------------- | ---------- | ------------- |
+| **Capas Controller → Service → Repository** | Toda la API | Separa HTTP, reglas de negocio y acceso a datos; facilita pruebas y cambios sin acoplar la BD a los endpoints |
+| **DTOs de entrada** | `CrearCreadorRequest`, `PublicarActivoRequest`, `LoginRequest` | Desacopla el contrato HTTP de las entidades JPA; evita exponer campos internos y permite validar solo lo necesario |
+| **`Optional` en repositorios** | `findById()` en servicios | Fuerza comprobar existencia antes de usar el resultado; si no hay dato, se responde 404 en lugar de lanzar excepciones genéricas |
+| **JPQL** | Suma de regalías en `InversorRepository` | Consulta orientada a entidades Java; portable y legible frente a SQL crudo para agregaciones sobre el modelo de dominio |
+| **SQL nativo** | Inserciones en `inversor_activo` | Operación puntual sobre tabla intermedia cuando JPA no simplifica el caso de uso |
+| **`@JsonIgnore`** | Listas bidireccionales (`Creador.activos`) | Evita referencias circulares que producirían JSON infinito al serializar |
+| **`@RestControllerAdvice`** | `ApiExceptionHandler` | Respuestas de error JSON uniformes (`message`, `errors[]`) en lugar del HTML por defecto de Spring |
+
+### 7.6 Seguridad
+
+| Mecanismo | Uso | Justificación |
+| --------- | --- | ------------- |
+| **JWT (Bearer)** | Frontend React | API stateless; el cliente guarda el token y lo envía en cada petición; escalable y estándar para SPAs |
+| **BCrypt** | Contraseñas en `usuarios` | Hash irreversible; Spring Security lo integra con `PasswordEncoder` |
+| **HTTP Basic Auth** | Pruebas con `admin` / `admin` | Alternativa rápida en Postman sin flujo de login |
+| **API Key (`X-API-Key`)** | Herramientas y scripts | Autenticación simple para escritura en entornos de desarrollo sin implementar OAuth |
+| **Autorización por roles** | `INVERSOR`, `CREADOR` | Restringe invertir, vender y gestionar obras más allá de “estar autenticado” |
+| **Reglas por método HTTP** | GET públicos en marketplace; POST/PUT/DELETE protegidos | Lectura abierta para explorar el catálogo; mutaciones siempre autenticadas |
+
+### 7.7 Herramientas de desarrollo y documentación
+
+| Herramienta | Rol |
+| ----------- | --- |
+| **MySQL Workbench** | Inspección de tablas, PK/FK y datos de demo |
+| **Postman** | Pruebas de endpoints, búsqueda con filtros y evidencias de seguridad (401, login JWT) |
+| **Swagger UI** | Contrato vivo de la API generado desde el código |
+| **Git + GitHub** | Control de versiones y trabajo en equipo sobre el monorepo |
 
 
 ---
@@ -238,7 +307,7 @@ Base: `http://localhost:8080/api/v1`
 
 ## 9. Evidencias — capturas de pantalla
 
-Evidencias del sistema en funcionamiento. Los archivos originales están en `docs/capturas/`; a continuación se incluyen embebidos en este documento.
+Evidencias del sistema en funcionamiento. Archivos en `docs/capturas/`.
 
 ### Índice de capturas
 
@@ -262,59 +331,59 @@ Evidencias del sistema en funcionamiento. Los archivos originales están en `doc
 
 ### 9.1 Base de datos (MySQL Workbench)
 
-#### Captura 1 — Tabla `creadores`
+**Captura 1 — Tabla `creadores`**
 
-Captura 1 - tabla creadores
+<img src="./capturas/creadores.png" width="900" />
 
-#### Captura 2 — Tabla `activos` (FK `creador_id`)
+**Captura 2 — Tabla `activos` (FK `creador_id`)**
 
-Captura 2 - tabla activos
+<img src="./capturas/activos.png" width="900" />
 
-#### Captura 3 — Tabla `inversores`
+**Captura 3 — Tabla `inversores`**
 
-Captura 3 - tabla inversores
+<img src="./capturas/inversores.png" width="900" />
 
-#### Captura 4 — Tabla `inversor_activo` (relación N:M)
+**Captura 4 — Tabla `inversor_activo` (relación N:M)**
 
-Captura 4 - tabla inversor_activo
+<img src="./capturas/inversor_activo.png" width="900" />
 
-#### Captura 5 — Tabla `usuarios`
+**Captura 5 — Tabla `usuarios`**
 
-Captura 5 - tabla usuarios
+<img src="./capturas/usuarios.png" width="900" />
 
 ---
 
 ### 9.2 API — Marketplace y búsqueda
 
-#### Captura 6 — GET `/activos` sin autenticación
+**Captura 6 — GET `/activos` sin autenticación**
 
-Captura 6 - GET activos
+<img src="./capturas/postman-get-activos.png" width="900" />
 
-#### Captura 7 — Búsqueda con filtros
+**Captura 7 — Búsqueda con filtros**
 
 Sin filtros:
 
-Captura 7a - buscar sin filtros
+<img src="./capturas/postman-buscar1.png" width="900" />
 
 Solo `tipo=MUSICA`:
 
-Captura 7b - buscar tipo MUSICA
+<img src="./capturas/postman-buscar2.png" width="900" />
 
 `tipo=MUSICA` y `rendimientoMinimo=10`:
 
-Captura 7c - buscar tipo y rendimiento
+<img src="./capturas/postman-buscar3.png" width="900" />
 
 ---
 
 ### 9.3 Seguridad y autenticación
 
-#### Captura 8 — POST sin login → 401 Unauthorized
+**Captura 8 — POST sin login → 401 Unauthorized**
 
-Captura 8 - 401 sin auth
+<img src="./capturas/postman-401.png" width="900" />
 
-#### Captura 9 — Login JWT
+**Captura 9 — Login JWT**
 
-Captura 9 - login JWT
+<img src="./capturas/postman-login.png" width="900" />
 
 ---
 
