@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, Trash2 } from 'lucide-react'
+import { Loader2, Pencil, Trash2 } from 'lucide-react'
 import { eliminarObra, fetchMisActivos } from '../../api/mlookerApi'
 import ConfirmDialog from '../ConfirmDialog'
+import CreatorEditWorkModal from './CreatorEditWorkModal'
 import { useToast } from '../../context/ToastContext'
 
 function formatEur(value) {
@@ -11,13 +12,14 @@ function formatEur(value) {
   }).format(value)
 }
 
-export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
+export default function CreatorWorksList({ creadorId, artistName, refreshKey, onDeleted, onEdited }) {
   const { showSuccess } = useToast()
   const [works, setWorks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [pendingDelete, setPendingDelete] = useState(null)
+  const [editingWork, setEditingWork] = useState(null)
 
   const loadWorks = useCallback(async () => {
     setError(null)
@@ -100,20 +102,29 @@ export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
                     {tokensVendidos > 0 && ` · ${tokensVendidos} tokens vendidos`}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  className="sell-btn works-delete-btn"
-                  disabled={deletingId === work.id}
-                  onClick={() => handleDeleteRequest(work)}
-                >
-                  {deletingId === work.id ? (
-                    <Loader2 className="spin" size={16} />
-                  ) : (
-                    <>
-                      <Trash2 size={14} /> Eliminar
-                    </>
-                  )}
-                </button>
+                <div className="works-actions">
+                  <button
+                    type="button"
+                    className="auth-btn works-edit-btn"
+                    onClick={() => setEditingWork(work)}
+                  >
+                    <Pencil size={14} /> Editar
+                  </button>
+                  <button
+                    type="button"
+                    className="sell-btn works-delete-btn"
+                    disabled={deletingId === work.id}
+                    onClick={() => handleDeleteRequest(work)}
+                  >
+                    {deletingId === work.id ? (
+                      <Loader2 className="spin" size={16} />
+                    ) : (
+                      <>
+                        <Trash2 size={14} /> Eliminar
+                      </>
+                    )}
+                  </button>
+                </div>
               </li>
             )
           })}
@@ -134,6 +145,18 @@ export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
         cancelLabel="Cancelar"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setPendingDelete(null)}
+      />
+
+      <CreatorEditWorkModal
+        open={Boolean(editingWork)}
+        work={editingWork}
+        creadorId={creadorId}
+        artistName={artistName}
+        onClose={() => setEditingWork(null)}
+        onSaved={() => {
+          loadWorks()
+          onEdited?.()
+        }}
       />
     </section>
   )

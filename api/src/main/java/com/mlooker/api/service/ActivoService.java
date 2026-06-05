@@ -75,6 +75,38 @@ public class ActivoService {
 	}
 
 	@org.springframework.transaction.annotation.Transactional
+	public Activo editarObra(Long creadorId, Long activoId, PublicarActivoRequest request) {
+		Activo activo = activoRepository.findById(activoId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Obra no encontrada"));
+
+		if (activo.getCreador() == null || !creadorId.equals(activo.getCreador().getId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo puedes editar tus propias obras");
+		}
+
+		boolean tieneInversores = inversorRepository.countInversoresByActivoId(activoId) > 0
+				|| activo.getPorcentajeDisponible() < 100.0;
+
+		activo.setTitulo(request.titulo().trim());
+		activo.setTipo(request.tipo());
+
+		if (tieneInversores) {
+			boolean cambiaEconomia = !request.precioTotal().equals(activo.getPrecioTotal())
+					|| !request.cantidadFracciones().equals(activo.getCantidadFracciones());
+			if (cambiaEconomia) {
+				throw new ResponseStatusException(
+						HttpStatus.BAD_REQUEST,
+						"No puedes cambiar precio o fracciones si la obra ya tiene tokens vendidos");
+			}
+		} else {
+			activo.setPrecioTotal(request.precioTotal());
+			activo.setCantidadFracciones(request.cantidadFracciones());
+			activo.setRendimientoMensual(request.precioTotal() / request.cantidadFracciones());
+		}
+
+		return activoRepository.save(activo);
+	}
+
+	@org.springframework.transaction.annotation.Transactional
 	public void eliminarObra(Long creadorId, Long activoId) {
 		Activo activo = activoRepository.findById(activoId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Obra no encontrada"));
