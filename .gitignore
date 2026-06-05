@@ -1,0 +1,6 @@
+# Artefactos locales del frontend (evita miles de cambios al cambiar de rama)
+web/node_modules/
+web/dist/
+web/.vite/
+web/.env
+.DS_Store

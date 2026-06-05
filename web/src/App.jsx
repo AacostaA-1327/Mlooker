@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+﻿import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Wallet, Music4, TrendingUp, BadgeEuro } from 'lucide-react'
 import { currentUser, marketplaceAssets, royaltyHistory } from './mocks/data'
 
