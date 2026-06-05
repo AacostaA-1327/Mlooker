@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mlooker.api.controller.dto.CrearCreadorRequest;
 import com.mlooker.api.entity.Creador;
 import com.mlooker.api.service.CreadorService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/creadores")
@@ -41,17 +44,20 @@ public class CreadorController {
 	}
 
 	@PostMapping
-	public ResponseEntity<Creador> create(@RequestBody Creador creador) {
+	public ResponseEntity<Creador> create(@Valid @RequestBody CrearCreadorRequest request) {
+		Creador creador = new Creador();
+		creador.setNombre(request.nombre());
+		creador.setEmail(request.email());
 		Creador saved = creadorService.save(creador);
 		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Creador> update(@PathVariable Long id, @RequestBody Creador creador) {
+	public ResponseEntity<Creador> update(@PathVariable Long id, @Valid @RequestBody CrearCreadorRequest request) {
 		return creadorService.findById(id)
 				.map(existing -> {
-					existing.setNombre(creador.getNombre());
-					existing.setEmail(creador.getEmail());
+					existing.setNombre(request.nombre());
+					existing.setEmail(request.email());
 					return ResponseEntity.ok(creadorService.save(existing));
 				})
 				.orElse(ResponseEntity.notFound().build());

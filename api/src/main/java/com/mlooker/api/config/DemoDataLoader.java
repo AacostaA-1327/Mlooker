@@ -38,10 +38,10 @@ public class DemoDataLoader implements CommandLineRunner {
 		Creador laPantera = crearCreador("La Pantera", "pantera@mlooker.demo");
 		Creador lucho = crearCreador("Lucho RK", "lucho@mlooker.demo");
 
-		crearActivo("Buenas Noches", "Album", 14.5, 38.0, quevedo);
-		crearActivo("Cayo la Noche", "Single", 9.2, 57.0, laPantera);
-		crearActivo("Tour Maleante", "Album", 16.8, 24.0, lucho);
-		crearActivo("Columbia", "Single", 11.0, 43.0, quevedo);
+		crearActivo("Buenas Noches", "MUSICA", 14.5, 38.0, quevedo);
+		crearActivo("Cayo la Noche", "MUSICA", 9.2, 57.0, laPantera);
+		crearActivo("Tour Maleante", "MUSICA", 16.8, 24.0, lucho);
+		crearActivo("Columbia", "MUSICA", 11.0, 43.0, quevedo);
 
 		Inversor demo = new Inversor();
 		demo.setNombre("Alex Rivera");
