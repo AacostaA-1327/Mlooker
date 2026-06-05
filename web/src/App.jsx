@@ -25,6 +25,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [investingId, setInvestingId] = useState(null)
+  const [tokenQty, setTokenQty] = useState({})
 
   const loadMarketplace = useCallback(async () => {
     setError(null)
@@ -53,14 +54,33 @@ export default function App() {
       .finally(() => setLoading(false))
   }, [loadMarketplace, view])
 
+  const getTokenQuantity = (assetId) => {
+    const qty = tokenQty[assetId] ?? 1
+    return Math.max(1, Number(qty) || 1)
+  }
+
+  const maxTokensForAsset = (asset) => {
+    const byAvailability = Math.max(1, Math.floor(asset.availablePct / 10))
+    const byWallet = Math.max(1, Math.floor(walletEur / asset.tokenPrice))
+    return Math.min(byAvailability, byWallet)
+  }
+
   const handleInvertir = async (asset) => {
     if (asset.availablePct <= 0) return
+
+    const quantity = getTokenQuantity(asset.id)
+    const importe = asset.tokenPrice * quantity
+
+    if (importe > walletEur) {
+      setError('Saldo insuficiente para esta compra.')
+      return
+    }
 
     setInvestingId(asset.id)
     setError(null)
 
     try {
-      const result = await invertirEnActivo(asset.id, asset.tokenPrice)
+      const result = await invertirEnActivo(asset.id, importe)
       setWalletEur(result.nuevoSaldo)
       setTotalRegalias(await fetchTotalRegalias())
       setAssets((prev) =>
@@ -71,11 +91,15 @@ export default function App() {
         ),
       )
     } catch (err) {
-      const msg = err.response?.data?.message ?? err.response?.data?.error
+      const data = err.response?.data
+      const msg =
+        data?.message ??
+        data?.error ??
+        (Array.isArray(data?.errors) ? data.errors.map((e) => e.message).join('. ') : null)
       setError(
-        msg ??
-          err.response?.statusText ??
-          'Error al invertir. Revisa credenciales (X-API-Key) y saldo.',
+        msg && msg !== 'No message available'
+          ? msg
+          : 'Error al invertir. Revisa saldo, disponibilidad y API Key en .env',
       )
     } finally {
       setInvestingId(null)
@@ -170,6 +194,26 @@ export default function App() {
                           <div className="progress">
                             <span style={{ width: `${asset.availablePct}%` }} />
                           </div>
+                        </div>
+
+                        <div className="token-qty">
+                          <label htmlFor={`qty-${asset.id}`}>Tokens a comprar</label>
+                          <input
+                            id={`qty-${asset.id}`}
+                            type="number"
+                            min={1}
+                            max={maxTokensForAsset(asset)}
+                            value={getTokenQuantity(asset.id)}
+                            onChange={(e) =>
+                              setTokenQty((prev) => ({
+                                ...prev,
+                                [asset.id]: e.target.value,
+                              }))
+                            }
+                          />
+                          <span className="token-total">
+                            Total: {formatEur(asset.tokenPrice * getTokenQuantity(asset.id))}
+                          </span>
                         </div>
 
                         <button

@@ -76,7 +76,7 @@ public class InversorService {
 		}
 
 		inversor.setSaldo(inversor.getSaldo() - importe);
-		inversor.getActivos().add(activo);
+		inversorRepository.linkActivo(inversorId, activoId);
 
 		double nuevaDisponibilidad = Math.max(0, activo.getPorcentajeDisponible() - PORCENTAJE_POR_INVERSION);
 		activo.setPorcentajeDisponible(nuevaDisponibilidad);

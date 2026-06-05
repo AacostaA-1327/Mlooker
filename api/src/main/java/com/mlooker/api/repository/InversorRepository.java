@@ -3,6 +3,7 @@ package com.mlooker.api.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,4 +13,10 @@ public interface InversorRepository extends JpaRepository<Inversor, Long> {
 
 	@Query("SELECT SUM(a.rendimientoMensual) FROM Inversor i JOIN i.activos a WHERE i.id = :inversorId")
 	Optional<Double> sumRendimientoMensualByInversorId(@Param("inversorId") Long inversorId);
+
+	@Modifying
+	@Query(
+			value = "INSERT IGNORE INTO inversor_activo (inversor_id, activo_id) VALUES (:inversorId, :activoId)",
+			nativeQuery = true)
+	int linkActivo(@Param("inversorId") Long inversorId, @Param("activoId") Long activoId);
 }
