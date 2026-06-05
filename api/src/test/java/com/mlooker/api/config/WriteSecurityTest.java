@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.mlooker.api.controller.ActivoController;
 import com.mlooker.api.entity.Activo;
 import com.mlooker.api.service.ActivoService;
+import com.mlooker.api.service.JwtService;
 
 @WebMvcTest(ActivoController.class)
 @Import(SecurityConfig.class)
@@ -32,6 +33,9 @@ class WriteSecurityTest {
 
 	@MockitoBean
 	private ActivoService activoService;
+
+	@MockitoBean
+	private JwtService jwtService;
 
 	@BeforeEach
 	void setUp() {

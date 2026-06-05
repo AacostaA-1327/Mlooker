@@ -12,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,9 +27,12 @@ public class Creador {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@NotBlank(message = "El nombre es obligatorio")
 	@Column(nullable = false)
 	private String nombre;
 
+	@NotBlank(message = "El email es obligatorio")
+	@Email(message = "El email debe tener un formato válido")
 	@Column(nullable = false, unique = true)
 	private String email;
 
