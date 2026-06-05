@@ -1,20 +1,14 @@
 import api from './client'
-
-
-const COVERS = [
-  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=640&q=80',
-  'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=640&q=80',
-  'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=640&q=80',
-  'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=640&q=80',
-]
+import { coverForArtist } from '../lib/artistCovers'
 
 export function mapActivoToCard(activo, index = 0) {
   const totalTokens = activo.cantidadFracciones ?? 0
   const availablePct = activo.porcentajeDisponible ?? 100
+  const artist = activo.creador?.nombre ?? 'Artista desconocido'
   return {
     id: activo.id,
     title: activo.titulo,
-    artist: activo.creador?.nombre ?? 'Artista desconocido',
+    artist,
     type: activo.tipo,
     totalTokens,
     tokensAvailable: Math.round((availablePct / 100) * totalTokens),
@@ -24,7 +18,7 @@ export function mapActivoToCard(activo, index = 0) {
         ? activo.precioTotal / activo.cantidadFracciones
         : activo.rendimientoMensual,
     availablePct: Math.round(availablePct),
-    cover: COVERS[index % COVERS.length],
+    cover: coverForArtist(artist, index),
   }
 }
 
