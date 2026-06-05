@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Loader2, LogIn, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 export default function LoginModal({ open, onClose, message }) {
   const { login } = useAuth()
+  const { showSuccess } = useToast()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -18,8 +20,9 @@ export default function LoginModal({ open, onClose, message }) {
     setSubmitting(true)
     setError(null)
     try {
-      await login(username.trim(), password)
+      const profile = await login(username.trim(), password)
       onClose?.()
+      showSuccess(`Sesión iniciada como ${profile.nombre}.`)
     } catch (err) {
       setError(err.response?.data?.message ?? 'No se pudo iniciar sesión.')
     } finally {

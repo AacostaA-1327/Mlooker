@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Disc3, Loader2, Music2, Upload } from 'lucide-react'
+import { Disc3, Loader2, Music2, Upload } from 'lucide-react'
 import { publicarActivo } from '../../api/mlookerApi'
+import { useToast } from '../../context/ToastContext'
 
 const TIPOS = [
   { value: 'MUSICA', label: 'Música' },
@@ -58,10 +59,10 @@ function validate(form) {
 }
 
 export default function CreatorPublishForm({ creadorId, artistName, onPublished }) {
+  const { showSuccess } = useToast()
   const [form, setForm] = useState({ ...INITIAL, nombreArtista: artistName ?? '' })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [apiError, setApiError] = useState(null)
 
   useEffect(() => {
@@ -97,8 +98,8 @@ export default function CreatorPublishForm({ creadorId, artistName, onPublished 
         cantidadFracciones: parseInt(form.cantidadFracciones, 10),
       }
       await publicarActivo(payload, creadorId)
-      setSuccess(true)
       setForm({ ...INITIAL, nombreArtista: artistName ?? '' })
+      showSuccess(`"${payload.titulo}" publicada correctamente en el marketplace.`)
       onPublished?.()
     } catch (err) {
       setApiError(
@@ -238,12 +239,6 @@ export default function CreatorPublishForm({ creadorId, artistName, onPublished 
         {apiError && (
           <p className="error-banner" role="alert">
             {apiError}
-          </p>
-        )}
-
-        {success && (
-          <p className="success-banner" role="status">
-            <CheckCircle2 size={18} /> Obra publicada correctamente en el marketplace.
           </p>
         )}
 
