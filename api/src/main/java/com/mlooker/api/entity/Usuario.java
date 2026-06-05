@@ -1,40 +1,39 @@
 package com.mlooker.api.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "creadores")
+@Table(name = "usuarios")
 @Data
 @NoArgsConstructor
-public class Creador {
+public class Usuario {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(nullable = false, unique = true)
+	private String username;
+
+	@Column(nullable = false)
+	private String password;
+
+	@Column(nullable = false)
+	private String rol;
+
 	@Column(nullable = false)
 	private String nombre;
 
-	@Column(nullable = false, unique = true)
-	private String email;
+	@Column
+	private Long inversorId;
 
-	@Column(nullable = false)
-	private boolean verificado = false;
-
-	@OneToMany(mappedBy = "creador")
-	@JsonIgnore
-	private List<Activo> activos = new ArrayList<>();
+	@Column
+	private Long creadorId;
 }

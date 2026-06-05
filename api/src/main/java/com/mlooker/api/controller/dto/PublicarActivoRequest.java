@@ -8,12 +8,16 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record PublicarActivoRequest(
+		@NotBlank(message = "El nombre del artista es obligatorio")
+		@Size(max = 120, message = "El nombre del artista no puede superar 120 caracteres")
+		String nombreArtista,
+
 		@NotBlank(message = "El nombre de la obra es obligatorio")
 		@Size(max = 200, message = "El título no puede superar 200 caracteres")
 		String titulo,
 
 		@NotBlank(message = "El tipo es obligatorio")
-		@Pattern(regexp = "MUSICA|LIBRO", message = "El tipo debe ser MUSICA o LIBRO")
+		@Pattern(regexp = "MUSICA|ALBUM", message = "El tipo debe ser MUSICA o ALBUM")
 		String tipo,
 
 		@NotNull(message = "El precio total es obligatorio")

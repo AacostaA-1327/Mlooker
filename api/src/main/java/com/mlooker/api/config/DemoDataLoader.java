@@ -2,6 +2,7 @@ package com.mlooker.api.config;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.mlooker.api.entity.Activo;
@@ -53,6 +54,7 @@ public class DemoDataLoader implements CommandLineRunner {
 		Creador creador = new Creador();
 		creador.setNombre(nombre);
 		creador.setEmail(email);
+		creador.setVerificado(true);
 		return creadorRepository.save(creador);
 	}
 

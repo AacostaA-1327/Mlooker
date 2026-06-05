@@ -12,16 +12,22 @@ import com.mlooker.api.entity.Activo;
 import com.mlooker.api.entity.Creador;
 import com.mlooker.api.repository.ActivoRepository;
 import com.mlooker.api.repository.CreadorRepository;
+import com.mlooker.api.repository.InversorRepository;
 
 @Service
 public class ActivoService {
 
 	private final ActivoRepository activoRepository;
 	private final CreadorRepository creadorRepository;
+	private final InversorRepository inversorRepository;
 
-	public ActivoService(ActivoRepository activoRepository, CreadorRepository creadorRepository) {
+	public ActivoService(
+			ActivoRepository activoRepository,
+			CreadorRepository creadorRepository,
+			InversorRepository inversorRepository) {
 		this.activoRepository = activoRepository;
 		this.creadorRepository = creadorRepository;
+		this.inversorRepository = inversorRepository;
 	}
 
 	public List<Activo> findAll() {
@@ -59,6 +65,32 @@ public class ActivoService {
 			return true;
 		}
 		return false;
+	}
+
+	public List<Activo> findByCreadorId(Long creadorId) {
+		if (!creadorRepository.existsById(creadorId)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Creador no encontrado");
+		}
+		return activoRepository.findByCreadorIdOrderByIdDesc(creadorId);
+	}
+
+	@org.springframework.transaction.annotation.Transactional
+	public void eliminarObra(Long creadorId, Long activoId) {
+		Activo activo = activoRepository.findById(activoId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Obra no encontrada"));
+
+		if (activo.getCreador() == null || !creadorId.equals(activo.getCreador().getId())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo puedes eliminar tus propias obras");
+		}
+
+		if (inversorRepository.countInversoresByActivoId(activoId) > 0) {
+			throw new ResponseStatusException(
+					HttpStatus.BAD_REQUEST,
+					"No puedes eliminar una obra que ya tiene inversores");
+		}
+
+		inversorRepository.unlinkAllByActivoId(activoId);
+		activoRepository.delete(activo);
 	}
 
 	public List<Activo> buscar(String tipo, Double rendimientoMinimo) {

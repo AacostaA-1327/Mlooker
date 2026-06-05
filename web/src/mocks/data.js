@@ -46,12 +46,3 @@ export const marketplaceAssets = [
   },
 ]
 
-export const royaltyHistory = [
-  { day: 'Lun', royalties: 180 },
-  { day: 'Mar', royalties: 250 },
-  { day: 'Mie', royalties: 220 },
-  { day: 'Jue', royalties: 360 },
-  { day: 'Vie', royalties: 420 },
-  { day: 'Sab', royalties: 390 },
-  { day: 'Dom', royalties: 470 },
-]

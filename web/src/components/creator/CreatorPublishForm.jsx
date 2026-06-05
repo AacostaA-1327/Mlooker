@@ -1,13 +1,14 @@
-import { useState } from 'react'
-import { BookOpen, CheckCircle2, Loader2, Music2, Upload } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CheckCircle2, Disc3, Loader2, Music2, Upload } from 'lucide-react'
 import { publicarActivo } from '../../api/mlookerApi'
 
 const TIPOS = [
   { value: 'MUSICA', label: 'Música' },
-  { value: 'LIBRO', label: 'Libro' },
+  { value: 'ALBUM', label: 'Álbum' },
 ]
 
 const INITIAL = {
+  nombreArtista: '',
   titulo: '',
   tipo: 'MUSICA',
   precioTotal: '',
@@ -16,6 +17,13 @@ const INITIAL = {
 
 function validate(form) {
   const errors = {}
+
+  const nombreArtista = form.nombreArtista.trim()
+  if (!nombreArtista) {
+    errors.nombreArtista = 'El nombre del artista es obligatorio'
+  } else if (nombreArtista.length > 120) {
+    errors.nombreArtista = 'Máximo 120 caracteres'
+  }
 
   const titulo = form.titulo.trim()
   if (!titulo) {
@@ -26,7 +34,7 @@ function validate(form) {
 
   if (!form.tipo) {
     errors.tipo = 'Selecciona un tipo'
-  } else if (!['MUSICA', 'LIBRO'].includes(form.tipo)) {
+  } else if (!['MUSICA', 'ALBUM'].includes(form.tipo)) {
     errors.tipo = 'Tipo no válido'
   }
 
@@ -49,12 +57,18 @@ function validate(form) {
   return errors
 }
 
-export default function CreatorPublishForm({ onPublished }) {
-  const [form, setForm] = useState(INITIAL)
+export default function CreatorPublishForm({ creadorId, artistName, onPublished }) {
+  const [form, setForm] = useState({ ...INITIAL, nombreArtista: artistName ?? '' })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [apiError, setApiError] = useState(null)
+
+  useEffect(() => {
+    if (artistName) {
+      setForm((prev) => ({ ...prev, nombreArtista: artistName }))
+    }
+  }, [artistName])
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -76,14 +90,15 @@ export default function CreatorPublishForm({ onPublished }) {
 
     try {
       const payload = {
+        nombreArtista: form.nombreArtista.trim(),
         titulo: form.titulo.trim(),
         tipo: form.tipo,
         precioTotal: parseFloat(form.precioTotal),
         cantidadFracciones: parseInt(form.cantidadFracciones, 10),
       }
-      await publicarActivo(payload)
+      await publicarActivo(payload, creadorId)
       setSuccess(true)
-      setForm(INITIAL)
+      setForm({ ...INITIAL, nombreArtista: artistName ?? '' })
       onPublished?.()
     } catch (err) {
       setApiError(
@@ -110,6 +125,24 @@ export default function CreatorPublishForm({ onPublished }) {
       </div>
 
       <form className="creator-form" onSubmit={handleSubmit} noValidate>
+        <div className="form-field">
+          <label htmlFor="nombreArtista">Nombre del artista</label>
+          <input
+            id="nombreArtista"
+            type="text"
+            value={form.nombreArtista}
+            readOnly
+            placeholder="Ej. Quevedo"
+            aria-invalid={Boolean(errors.nombreArtista)}
+            aria-describedby={errors.nombreArtista ? 'nombreArtista-error' : undefined}
+          />
+          {errors.nombreArtista && (
+            <p id="nombreArtista-error" className="field-error" role="alert">
+              {errors.nombreArtista}
+            </p>
+          )}
+        </div>
+
         <div className="form-field">
           <label htmlFor="titulo">Nombre de la obra</label>
           <input
@@ -143,7 +176,7 @@ export default function CreatorPublishForm({ onPublished }) {
                 {option.value === 'MUSICA' ? (
                   <Music2 size={16} />
                 ) : (
-                  <BookOpen size={16} />
+                  <Disc3 size={16} />
                 )}
                 {option.label}
               </label>

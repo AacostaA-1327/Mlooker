@@ -1,7 +1,5 @@
 import api from './client'
 
-const INVERSOR_ID = Number(import.meta.env.VITE_INVERSOR_ID ?? 1)
-const CREADOR_ID = Number(import.meta.env.VITE_CREADOR_ID ?? 1)
 
 const COVERS = [
   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=640&q=80',
@@ -11,16 +9,21 @@ const COVERS = [
 ]
 
 export function mapActivoToCard(activo, index = 0) {
+  const totalTokens = activo.cantidadFracciones ?? 0
+  const availablePct = activo.porcentajeDisponible ?? 100
   return {
     id: activo.id,
     title: activo.titulo,
     artist: activo.creador?.nombre ?? 'Artista desconocido',
     type: activo.tipo,
+    totalTokens,
+    tokensAvailable: Math.round((availablePct / 100) * totalTokens),
+    rendimientoMensual: activo.rendimientoMensual ?? 0,
     tokenPrice:
       activo.precioTotal && activo.cantidadFracciones
         ? activo.precioTotal / activo.cantidadFracciones
         : activo.rendimientoMensual,
-    availablePct: Math.round(activo.porcentajeDisponible ?? 100),
+    availablePct: Math.round(availablePct),
     cover: COVERS[index % COVERS.length],
   }
 }
@@ -30,12 +33,12 @@ export async function fetchActivos() {
   return data.map(mapActivoToCard)
 }
 
-export async function fetchInversor(id = INVERSOR_ID) {
-  const { data } = await api.get(`/api/v1/inversores/${id}`)
+export async function fetchInversor(inversorId) {
+  const { data } = await api.get(`/api/v1/inversores/${inversorId}`)
   return data
 }
 
-export async function fetchTotalRegalias(inversorId = INVERSOR_ID) {
+export async function fetchTotalRegalias(inversorId) {
   try {
     const { data } = await api.get(`/api/v1/inversores/${inversorId}/regalias-total`)
     return data.totalRegalias
@@ -47,17 +50,38 @@ export async function fetchTotalRegalias(inversorId = INVERSOR_ID) {
   }
 }
 
-export async function invertirEnActivo(activoId, importe, inversorId = INVERSOR_ID) {
+export async function invertirEnActivo(activoId, importe, inversorId) {
   const { data } = await api.post(`/api/v1/inversores/${inversorId}/invertir`, {
     activoId,
     importe,
   })
-  return data
+  return {
+    nuevoSaldo: data.nuevoSaldo,
+    porcentajeDisponible: data.porcentajeDisponible,
+  }
 }
 
-export async function publicarActivo(payload, creadorId = CREADOR_ID) {
+export async function venderTokens(activoId, importe, inversorId) {
+  const { data } = await api.post(`/api/v1/inversores/${inversorId}/vender`, {
+    activoId,
+    importe,
+  })
+  return {
+    nuevoSaldo: data.nuevoSaldo,
+    porcentajeDisponible: data.porcentajeDisponible,
+  }
+}
+
+export async function publicarActivo(payload, creadorId) {
   const { data } = await api.post(`/api/v1/creadores/${creadorId}/activos`, payload)
   return data
 }
 
-export { INVERSOR_ID, CREADOR_ID }
+export async function fetchMisActivos(creadorId) {
+  const { data } = await api.get(`/api/v1/creadores/${creadorId}/activos`)
+  return data
+}
+
+export async function eliminarObra(creadorId, activoId) {
+  await api.delete(`/api/v1/creadores/${creadorId}/activos/${activoId}`)
+}

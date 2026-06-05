@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mlooker.api.controller.dto.InvertirRequest;
 import com.mlooker.api.controller.dto.InvertirResponse;
 import com.mlooker.api.controller.dto.TotalRegaliasResponse;
+import com.mlooker.api.controller.dto.VenderRequest;
 import com.mlooker.api.entity.Inversor;
+import com.mlooker.api.service.AuthService;
 import com.mlooker.api.service.InversorService;
 
 @RestController
@@ -26,9 +28,11 @@ import com.mlooker.api.service.InversorService;
 public class InversorController {
 
 	private final InversorService inversorService;
+	private final AuthService authService;
 
-	public InversorController(InversorService inversorService) {
+	public InversorController(InversorService inversorService, AuthService authService) {
 		this.inversorService = inversorService;
+		this.authService = authService;
 	}
 
 	@GetMapping
@@ -38,6 +42,7 @@ public class InversorController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<Inversor> findById(@PathVariable Long id) {
+		authService.requireInversor(id);
 		return inversorService.findById(id)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
@@ -45,6 +50,7 @@ public class InversorController {
 
 	@GetMapping("/{id}/regalias-total")
 	public ResponseEntity<TotalRegaliasResponse> totalRegalias(@PathVariable Long id) {
+		authService.requireInversor(id);
 		return inversorService.totalRegaliasByInversorId(id)
 				.map(total -> ResponseEntity.ok(new TotalRegaliasResponse(id, total)))
 				.orElse(ResponseEntity.notFound().build());
@@ -54,7 +60,17 @@ public class InversorController {
 	public ResponseEntity<InvertirResponse> invertir(
 			@PathVariable Long id,
 			@RequestBody InvertirRequest request) {
+		authService.requireInversor(id);
 		InvertirResponse response = inversorService.invertir(id, request.activoId(), request.importe());
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/{id}/vender")
+	public ResponseEntity<InvertirResponse> vender(
+			@PathVariable Long id,
+			@RequestBody VenderRequest request) {
+		authService.requireInversor(id);
+		InvertirResponse response = inversorService.vender(id, request.activoId(), request.importe());
 		return ResponseEntity.ok(response);
 	}
 
