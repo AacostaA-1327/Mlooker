@@ -36,8 +36,15 @@ export async function fetchInversor(id = INVERSOR_ID) {
 }
 
 export async function fetchTotalRegalias(inversorId = INVERSOR_ID) {
-  const { data } = await api.get(`/api/v1/inversores/${inversorId}/regalias-total`)
-  return data.totalRegalias
+  try {
+    const { data } = await api.get(`/api/v1/inversores/${inversorId}/regalias-total`)
+    return data.totalRegalias
+  } catch (err) {
+    if (err.response?.status === 404) {
+      return null
+    }
+    throw err
+  }
 }
 
 export async function invertirEnActivo(activoId, importe, inversorId = INVERSOR_ID) {
