@@ -36,4 +36,12 @@ public class InversorService {
 		}
 		return false;
 	}
+
+	public Optional<Double> totalRegaliasByInversorId(Long inversorId) {
+		if (!inversorRepository.existsById(inversorId)) {
+			return Optional.empty();
+		}
+		return Optional.of(
+				inversorRepository.sumRendimientoMensualByInversorId(inversorId).orElse(0.0));
+	}
 }
