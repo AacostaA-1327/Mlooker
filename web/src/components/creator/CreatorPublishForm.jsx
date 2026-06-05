@@ -74,7 +74,6 @@ export default function CreatorPublishForm({ creadorId, artistName, onPublished 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     setErrors((prev) => ({ ...prev, [field]: undefined }))
-    setSuccess(false)
     setApiError(null)
   }
 

@@ -69,6 +69,16 @@ public class CreadorController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 	}
 
+	@PutMapping("/{id}/activos/{activoId}")
+	public ResponseEntity<Activo> editarActivo(
+			@PathVariable Long id,
+			@PathVariable Long activoId,
+			@Valid @RequestBody PublicarActivoRequest request) {
+		authService.requireCreadorVerificado(id);
+		Activo updated = activoService.editarObra(id, activoId, request);
+		return ResponseEntity.ok(updated);
+	}
+
 	@DeleteMapping("/{id}/activos/{activoId}")
 	public ResponseEntity<Void> eliminarActivo(
 			@PathVariable Long id,

@@ -76,6 +76,11 @@ export async function fetchMisActivos(creadorId) {
   return data
 }
 
+export async function editarObra(creadorId, activoId, payload) {
+  const { data } = await api.put(`/api/v1/creadores/${creadorId}/activos/${activoId}`, payload)
+  return data
+}
+
 export async function eliminarObra(creadorId, activoId) {
   await api.delete(`/api/v1/creadores/${creadorId}/activos/${activoId}`)
 }

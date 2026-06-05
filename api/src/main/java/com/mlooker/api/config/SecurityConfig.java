@@ -60,6 +60,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/v1/inversores/*/vender").hasRole("INVERSOR")
 						.requestMatchers(HttpMethod.GET, "/api/v1/creadores/*/activos").hasRole("CREADOR")
 						.requestMatchers(HttpMethod.POST, "/api/v1/creadores/*/activos").hasRole("CREADOR")
+						.requestMatchers(HttpMethod.PUT, "/api/v1/creadores/*/activos/*").hasRole("CREADOR")
 						.requestMatchers(HttpMethod.DELETE, "/api/v1/creadores/*/activos/*").hasRole("CREADOR")
 						.requestMatchers(HttpMethod.GET, "/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/**").authenticated()

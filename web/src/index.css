@@ -619,15 +619,41 @@ body {
   color: #9da8bd;
 }
 
+.works-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.works-edit-btn,
 .works-delete-btn {
   width: auto;
-  min-width: 110px;
+  min-width: 100px;
   padding: 8px 12px;
   font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+}
+
+.modal-card-wide {
+  width: min(520px, 100%);
+}
+
+.edit-locked-hint {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ffc46b44;
+  background: rgba(255, 196, 107, 0.1);
+  color: #ffd89a;
+}
+
+.edit-modal-actions {
+  justify-content: flex-end;
+  margin-top: 4px;
 }
 
 .creator-form {

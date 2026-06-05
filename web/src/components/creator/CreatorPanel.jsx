@@ -14,8 +14,10 @@ export default function CreatorPanel({ creadorId, artistName, onCatalogChange })
     <>
       <CreatorWorksList
         creadorId={creadorId}
+        artistName={artistName}
         refreshKey={refreshKey}
         onDeleted={onCatalogChange}
+        onEdited={onCatalogChange}
       />
       <CreatorPublishForm
         creadorId={creadorId}
