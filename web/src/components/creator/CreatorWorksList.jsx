@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Loader2, Trash2 } from 'lucide-react'
 import { eliminarObra, fetchMisActivos } from '../../api/mlookerApi'
+import ConfirmDialog from '../ConfirmDialog'
+import { useToast } from '../../context/ToastContext'
 
 function formatEur(value) {
   return new Intl.NumberFormat('es-ES', {
@@ -10,10 +12,12 @@ function formatEur(value) {
 }
 
 export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
+  const { showSuccess } = useToast()
   const [works, setWorks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null)
 
   const loadWorks = useCallback(async () => {
     setError(null)
@@ -31,17 +35,22 @@ export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
     loadWorks()
   }, [loadWorks, refreshKey])
 
-  const handleDelete = async (work) => {
-    const confirmed = window.confirm(
-      `¿Eliminar "${work.titulo}" del marketplace? Esta acción no se puede deshacer.`,
-    )
-    if (!confirmed) return
+  const handleDeleteRequest = (work) => {
+    setPendingDelete(work)
+  }
 
+  const handleDeleteConfirm = async () => {
+    if (!pendingDelete) return
+
+    const work = pendingDelete
+    setPendingDelete(null)
     setDeletingId(work.id)
     setError(null)
+
     try {
       await eliminarObra(creadorId, work.id)
       setWorks((prev) => prev.filter((item) => item.id !== work.id))
+      showSuccess(`"${work.titulo}" eliminada del marketplace.`)
       onDeleted?.()
     } catch (err) {
       setError(err.response?.data?.message ?? 'No se pudo eliminar la obra.')
@@ -95,7 +104,7 @@ export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
                   type="button"
                   className="sell-btn works-delete-btn"
                   disabled={deletingId === work.id}
-                  onClick={() => handleDelete(work)}
+                  onClick={() => handleDeleteRequest(work)}
                 >
                   {deletingId === work.id ? (
                     <Loader2 className="spin" size={16} />
@@ -112,6 +121,20 @@ export default function CreatorWorksList({ creadorId, refreshKey, onDeleted }) {
       )}
 
       {error && <p className="error-banner">{error}</p>}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Eliminar obra"
+        message={
+          pendingDelete
+            ? `¿Eliminar "${pendingDelete.titulo}" del marketplace? Esta acción no se puede deshacer.`
+            : ''
+        }
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setPendingDelete(null)}
+      />
     </section>
   )
 }

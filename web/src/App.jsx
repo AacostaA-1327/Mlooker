@@ -25,6 +25,7 @@ import {
 import { fetchActivos, fetchInversor, fetchTotalRegalias } from './api/mlookerApi'
 
 import { useAuth } from './context/AuthContext'
+import { useToast } from './context/ToastContext'
 
 import CreatorPanel from './components/creator/CreatorPanel'
 
@@ -99,6 +100,12 @@ function saveOwnedTokens(inversorId, owned) {
 export default function App() {
 
   const { user, isLoggedIn, isInversor, isVerifiedCreator, logout, bootstrapping } = useAuth()
+  const { showSuccess } = useToast()
+
+  const handleLogout = () => {
+    logout()
+    showSuccess('Sesión cerrada correctamente.')
+  }
 
   const [view, setView] = useState(VIEWS.MARKETPLACE)
 
@@ -404,7 +411,7 @@ export default function App() {
 
               )}
 
-              <button type="button" className="auth-btn" onClick={logout}>
+              <button type="button" className="auth-btn" onClick={handleLogout}>
 
                 <LogOut size={16} /> Cerrar sesión
 
