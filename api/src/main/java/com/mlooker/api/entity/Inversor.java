@@ -3,6 +3,8 @@ package com.mlooker.api.entity;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,5 +38,6 @@ public class Inversor {
 			name = "inversor_activo",
 			joinColumns = @JoinColumn(name = "inversor_id"),
 			inverseJoinColumns = @JoinColumn(name = "activo_id"))
+	@JsonIgnore
 	private Set<Activo> activos = new HashSet<>();
 }
