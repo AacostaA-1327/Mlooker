@@ -1,40 +1,112 @@
-import { CheckCircle2, Music2, Palette } from 'lucide-react'
+﻿import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { Wallet, Music4, TrendingUp, BadgeEuro } from 'lucide-react'
+import { currentUser, marketplaceAssets, royaltyHistory } from './mocks/data'
 
-function App() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-mlooker-bg px-6 py-16 text-slate-100">
-      <section className="w-full max-w-3xl rounded-2xl border border-mlooker-border bg-mlooker-surface p-8 shadow-glow">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-mlooker-tech/40 bg-mlooker-tech/10 px-3 py-1 text-sm text-mlooker-tech">
-          <Music2 className="h-4 w-4" />
-          Tarjeta T-13 completada
-        </div>
-
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Mlooker Frontend Inicializado
-        </h1>
-        <p className="mt-3 text-mlooker-muted">
-          SPA creada con React + Vite, Tailwind CSS y Lucide React lista para
-          construir los módulos de negocio.
-        </p>
-
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <InfoCard icon={CheckCircle2} title="React + Vite" subtitle="Base moderna y rápida" />
-          <InfoCard icon={Palette} title="Tailwind CSS" subtitle="Estilos listos para maquetar" />
-          <InfoCard icon={Music2} title="Lucide" subtitle="Iconografía limpia integrada" />
-        </div>
-      </section>
-    </main>
-  )
+function formatEur(value) {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(value)
 }
 
-function InfoCard({ icon: Icon, title, subtitle }) {
+export default function App() {
   return (
-    <article className="rounded-xl border border-mlooker-border bg-mlooker-card p-4">
-      <Icon className="h-5 w-5 text-mlooker-accent" />
-      <h2 className="mt-3 font-semibold">{title}</h2>
-      <p className="text-sm text-mlooker-muted">{subtitle}</p>
-    </article>
+    <div className="app-shell">
+      <header className="navbar">
+        <div className="brand">
+          <div className="logo">M</div>
+          <div>
+            <p className="brand-title">Mlooker</p>
+            <p className="brand-subtitle">Trading de regalias musicales</p>
+          </div>
+        </div>
+
+        <div className="wallet">
+          <Wallet size={18} />
+          <div>
+            <span className="wallet-label">Wallet balance</span>
+            <strong>{formatEur(currentUser.walletEur)}</strong>
+          </div>
+        </div>
+      </header>
+
+      <main className="layout">
+        <section>
+          <div className="section-heading">
+            <h1>Marketplace</h1>
+            <p>Invierte en tokens de albumes y canciones con reparto automatico de royalties.</p>
+          </div>
+
+          <div className="asset-grid">
+            {marketplaceAssets.map((asset) => (
+              <article key={asset.id} className="asset-card">
+                <img src={asset.cover} alt={asset.title} className="asset-cover" />
+                <div className="asset-body">
+                  <div className="asset-top">
+                    <span className="badge">{asset.type}</span>
+                    <Music4 size={16} />
+                  </div>
+                  <h3>{asset.title}</h3>
+                  <p className="artist">{asset.artist}</p>
+
+                  <div className="stats">
+                    <p>
+                      <BadgeEuro size={14} /> Precio token
+                    </p>
+                    <strong>{formatEur(asset.tokenPrice)}</strong>
+                  </div>
+
+                  <div className="availability">
+                    <div className="availability-header">
+                      <span>Disponibilidad</span>
+                      <strong>{asset.availablePct}%</strong>
+                    </div>
+                    <div className="progress">
+                      <span style={{ width: `${asset.availablePct}%` }} />
+                    </div>
+                  </div>
+
+                  <button className="invest-btn" type="button">
+                    Invertir
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <aside className="chart-panel">
+          <div className="chart-header">
+            <h2>
+              <TrendingUp size={18} /> Historial de regalias
+            </h2>
+            <p>Ultimos 7 dias</p>
+          </div>
+
+          <div className="chart-wrap">
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={royaltyHistory}>
+                <XAxis dataKey="day" stroke="#95a1b8" />
+                <YAxis stroke="#95a1b8" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#131b2d',
+                    border: '1px solid #2d3954',
+                    borderRadius: '10px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="royalties"
+                  stroke="#3ecf8e"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: '#3ecf8e' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </aside>
+      </main>
+    </div>
   )
 }
-
-export default App
