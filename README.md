@@ -476,4 +476,3 @@ VITE_API_URL=http://localhost:8080
 | [`docs/SETUP-LOCAL.md`](docs/SETUP-LOCAL.md) | Arranque en otro PC del equipo |
 | [`docs/seed-demo-mlooker.sql`](docs/seed-demo-mlooker.sql) | Datos de referencia SQL |
 
-> Para la entrega UT6, el **documento de diseño** (PDF o Markdown) debe incluir además capturas o vídeo de las tablas en MySQL y las pruebas con Postman.
